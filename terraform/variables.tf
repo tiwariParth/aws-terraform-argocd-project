@@ -10,7 +10,7 @@ variable "instance_type" {
   default = "t2.micro"
 }
 
-variable "ssh_cdir" {
-  description = "Your IP address for SSH access (CIDR notation)"
-  type = string
+variable "ssh_cidr" {
+  description = "The CIDR block for SSH access"
+  type        = string
 }
