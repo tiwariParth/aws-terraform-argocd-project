@@ -7,7 +7,7 @@ data "aws_ami" "amazon_linux_2" {
     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
 }
-    
+
 
 # Create key pair using your existing Ed25519 public key
 resource "aws_key_pair" "deployer" {
@@ -47,6 +47,16 @@ resource "aws_security_group" "instance_sg" {
     description = "HTTPS access"
   }
 
+  # Kubernetes NodePort range
+    ingress {
+    from_port   = 30000
+    to_port     = 32767
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Kubernetes NodePort Range"
+  }
+
+
   # Outbound rules
   egress {
     from_port   = 0
@@ -74,17 +84,7 @@ resource "aws_instance" "app_server" {
   key_name              = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
   
-  user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              yum install httpd -y
-              yum install -y docker
-              systemctl start httpd
-              systemctl enable httpd
-              systemctl start docker
-              systemctl enable docker
-              EOF
-
+  user_data = file("./initScript.sh")
   tags = {
     Name        = "terraform-instance"
     User        = "tiwariParth"
